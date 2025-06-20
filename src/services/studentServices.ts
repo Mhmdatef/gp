@@ -7,107 +7,110 @@ export const loginUser = (
   data: { email: string; pass: string },
   callback: (studentData: Student) => void
 ): void => {
-  const url = type == "student" ? "api/v1/students/login" : `api/v1/${type}/login`;
+  const url = type === "student" ? "api/v1/students/login" : `api/v1/${type}/login`;
   axiosInstance
     .post(url, {
       email: data.email,
       password: data.pass,
     })
     .then((res) => {
-      console.log(res.data);
-      localStorage.setItem("token", res.data.data.token);
+      const _token = res.data.data.token; 
+      localStorage.setItem("token", _token);
       showSuccess("Login is successful");
       callback(res.data.data);
-      // return res.data.data;
     })
-    .catch((err) => {
-      showError(err?.response?.data || err.name + ": " + err.message);
-      console.log(err);
+    .catch((err: unknown) => {
+      if (err instanceof Error) {
+        showError(err.message);
+        console.error(err);
+      } else {
+        showError("Unknown error");
+        console.error(err);
+      }
     });
 };
 
-export const getAllStudents = async (url: string, token?: string) => {
+export const getAllStudents = async (url: string): Promise<Student[]> => {
   try {
-    const res = await axiosInstance.get(url, {});
+    const res = await axiosInstance.get(url);
     return res.data.data.students;
-  } catch (err) {
-    console.log(err);
-    throw err.name+": "+err.message
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err);
+      throw err;
+    }
+    throw new Error("Unknown error");
   }
 };
 
-export const getOneStudent = async (url: string, token?: string) => {
+export const getOneStudent = async (url: string): Promise<Student | undefined> => {
   try {
-    const res = await axiosInstance.get(url, {});
+    const res = await axiosInstance.get(url);
     return res.data.data;
-  } catch (err) {
-    showError(err.name+": "+err.message);
-    console.log(err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      showError(err.message);
+      console.error(err);
+    } else {
+      showError("Unknown error");
+      console.error(err);
+    }
   }
 };
 
-
-export const editStudent = async (url: string, formData) => {
+export const editStudent = async (url: string, formData: unknown): Promise<Student | undefined> => {
   try {
     const res = await axiosInstance.patch(url, formData);
-    console.log(res.data.data.student);
-    
     return res.data.data.student;
-  } catch (err) {
-     console.log(err);
-    throw err.name+": "+err.message
-   
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err);
+      throw err;
+    }
+    throw new Error("Unknown error");
   }
 };
 
-export const deleteStudent = async (url: string) => {
+export const deleteStudent = async (url: string): Promise<unknown> => {
   try {
     const res = await axiosInstance.delete(url);
-    console.log(res.data);
-    
     return res.data.data;
-  } catch (err) {
-    showError(err.name+": "+err.message);
-    console.log(err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      showError(err.message);
+      console.error(err);
+    } else {
+      showError("Unknown error");
+      console.error(err);
+    }
   }
 };
 
-export const uploadStudents = async (url: string,formData) => {
+export const uploadStudents = async (url: string, formData: unknown): Promise<void> => {
   try {
-    console.log(formData);
-    
-    const res = await axiosInstance.post(url,formData,{
+    await axiosInstance.post(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    })
-     
-    console.log(res.data);
-    
-    // return res.data.data;
-  } catch (err) {
-    console.log(err);
-    throw err.response.data.message ;
-    
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err);
+      throw new Error(err.message);
+    }
+    throw new Error("Unknown error");
   }
 };
 
-
-export const addStudent = async (url: string,student) => {
+export const addStudent = async (url: string, student: unknown): Promise<Student | undefined> => {
   try {
-    const res = await axiosInstance.post(url,student)
-     
-    console.log(res.data);
-    
+    const res = await axiosInstance.post(url, student);
     return res.data.data;
-  } catch (err) {
-    console.log(err);
-    throw err.name+": "+err.message ;
-    
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err);
+      throw err;
+    }
+    throw new Error("Unknown error");
   }
 };
-
-
-
-
-
